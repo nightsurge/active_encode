@@ -250,6 +250,9 @@ module ActiveEncode
       end
 
       def ffmpeg_command(input_url, id, opts)
+        input_opt = opts[:outputs].collect do |output|
+          "#{output[:ffmpeg_input_opt]}"
+        end.join(" ")
         output_opt = opts[:outputs].collect do |output|
           sanitized_filename = ActiveEncode.sanitize_base input_url
           file_name = "outputs/#{sanitized_filename}-#{output[:label]}.#{output[:extension]}"
@@ -259,7 +262,7 @@ module ActiveEncode
           "#{k}: #{v}\r\n"
         end.join
         header_opt = "-headers '#{header_opt}'" if header_opt.present?
-        "#{FFMPEG_PATH} #{header_opt} -y -loglevel level+fatal -progress #{working_path('progress', id)} -i \"#{input_url}\" #{output_opt}"
+        "#{FFMPEG_PATH} #{header_opt} -y -loglevel level+fatal -progress #{working_path('progress', id)} #{input_opt} -i \"#{input_url}\" #{output_opt}"
       end
 
       def get_pid(id)
